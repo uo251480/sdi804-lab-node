@@ -28,6 +28,29 @@ module.exports = function(app, swig, gestorBD) {
 
     });
 
+    app.get('/compras', function (req, res) {
+        var criterio = { "usuario" : req.session.usuario };
+        gestorBD.obtenerCompras(criterio ,function(compras){
+            if (compras == null) {
+                res.send("Error al listar ");
+            } else {
+                var cancionesCompradasIds = [];
+                for(i=0; i < compras.length; i++){
+                    cancionesCompradasIds.push( compras[i].cancionId );
+                }
+                var criterio = { "_id" : { $in: cancionesCompradasIds } }
+                gestorBD.obtenerCanciones(criterio ,function(canciones){
+                    var respuesta = swig.renderFile('views/bcompras.html',
+                        {
+                            canciones : canciones
+                        });
+                    res.send(respuesta);
+                });
+            }
+        });
+    })
+
+
     app.get("/identificarse", function(req, res) {
         var respuesta = swig.renderFile('views/bidentificacion.html', {});
         res.send(respuesta);
